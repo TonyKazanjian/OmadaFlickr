@@ -9,13 +9,13 @@ import okhttp3.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
-object FlickerClient {
+object FlickrClient {
 
     private const val BASE_URL = "https://www.flickr.com/services/rest/"
 
     val flickerApi = createFlickerApi()
 
-    private fun createFlickerApi(): FlickerApi {
+    private fun createFlickerApi(): FlickrApi {
         val moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
@@ -29,7 +29,7 @@ object FlickerClient {
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .client(client)
             .build()
-            .create(FlickerApi::class.java)
+            .create(FlickrApi::class.java)
     }
 }
 

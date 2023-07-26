@@ -6,7 +6,7 @@ import retrofit2.http.Query
 
 private const val FORMAT = "format=json&nojsoncallback=1"
 
-interface FlickerApi {
+interface FlickrApi {
 
     @GET(value = "?method=flickr.photos.getRecent&$FORMAT")
     suspend fun getRecentPhotos() : PhotosResponse

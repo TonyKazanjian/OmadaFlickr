@@ -16,6 +16,13 @@ data class Photos(
     val photo: List<PhotoData>
 )
 
+@JsonClass(generateAdapter = true)
+data class PhotoData(
+    val id: String,
+    val title: String
+)
+
+
 
 
 
