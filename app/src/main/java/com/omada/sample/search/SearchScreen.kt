@@ -27,14 +27,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun SearchScreen(modifier: Modifier = Modifier, onSearch: (String) -> Unit) {
+fun SearchScreen(modifier: Modifier = Modifier) {
+    val searchViewModel: SearchViewModel = viewModel()
     Scaffold { padding ->
         FlickrSearchBar(
             history = listOf("you", "searched", "for", "this"),
             modifier = modifier.padding(padding),
-            onSearch = { onSearch(it) })
+            onSearch = { searchViewModel.launchSearch(it)})
     }
 }
 
@@ -45,7 +47,7 @@ private fun FlickrSearchBar(
     onSearch: (String) -> Unit
 ) {
     var text by remember { mutableStateOf("") }
-    var isActive by remember { mutableStateOf(false)}
+    var isActive by remember { mutableStateOf(false) }
     SearchBar(
         query = text,
         onQueryChange = { text = it },
@@ -104,5 +106,5 @@ private fun SearchBarIcon(icon: ImageVector, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun SearchPreview() {
-    SearchScreen(modifier = Modifier.fillMaxWidth(), onSearch = {})
+    SearchScreen(modifier = Modifier.fillMaxWidth())
 }

@@ -12,5 +12,4 @@ sealed class ApiResult {
     data class Success(val response: PhotosResponse): ApiResult()
     data class Error(val error: String): ApiResult()
     object Loading: ApiResult()
-    object InitialState : ApiResult()
 }
