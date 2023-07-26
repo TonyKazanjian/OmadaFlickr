@@ -7,24 +7,16 @@ import androidx.compose.ui.platform.LocalContext
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.omada.sample.data.PhotoData
-
-private const val IMAGE_FORMAT = "https://live.staticflickr.com/%1\$s/%2\$s_%3\$s_%4\$s.jpg"
-
-enum class SizeSuffix(val value: String) {
-    Thumbnail("w"),
-    Detail("b")
-}
+import com.omada.sample.domain.Photo
 
 @Composable
 fun FlickrImage(
-    photo: PhotoData,
-    sizeSuffix: SizeSuffix,
+    photo: Photo,
     modifier: Modifier = Modifier
 ) {
     AsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
-            .data(String.format(IMAGE_FORMAT, photo.server, photo.id, photo.secret, sizeSuffix.value))
+            .data(photo.url)
             .crossfade(true)
             .build(),
         imageLoader = ImageLoader(LocalContext.current),

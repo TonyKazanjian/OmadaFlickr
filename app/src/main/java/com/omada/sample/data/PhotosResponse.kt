@@ -4,11 +4,11 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class PhotosResponse(
-    val photos: Photos
+    val photos: PhotosData
 )
 
 @JsonClass(generateAdapter = true)
-data class Photos(
+data class PhotosData(
     val page: Int,
     val pages: Int,
     val perpage: Int,

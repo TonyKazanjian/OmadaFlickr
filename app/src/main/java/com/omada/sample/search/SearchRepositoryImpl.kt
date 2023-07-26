@@ -1,5 +1,9 @@
 package com.omada.sample.search
 
+import com.omada.sample.data.PhotosResponse
+import com.omada.sample.domain.ApiResult
+import com.omada.sample.domain.SizeSuffix
+import com.omada.sample.domain.map
 import com.omada.sample.network.FlickrApi
 import com.omada.sample.network.FlickrClient
 import kotlinx.coroutines.CoroutineDispatcher
@@ -14,11 +18,13 @@ class SearchRepositoryImpl(
     private val api: FlickrApi = FlickrClient.flickerApi,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Main
 ): SearchRepository {
-    override suspend fun getRecentPhotos() = fetchPhotos { ApiResult.Success(api.getRecentPhotos()) }
+    override suspend fun getRecentPhotos() = fetchPhotos {
+        ApiResult.Success(api.getRecentPhotos().map(SizeSuffix.Thumbnail))
+    }
 
     override suspend fun getPhotosByQuery(query: String) = fetchPhotos {
         SearchHistory.add(query)
-        ApiResult.Success(api.search(query))
+        ApiResult.Success(api.search(query).map(SizeSuffix.Thumbnail))
     }
 
     private fun fetchPhotos(onExecute: suspend () -> ApiResult): Flow<ApiResult> =

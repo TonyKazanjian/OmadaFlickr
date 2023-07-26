@@ -3,8 +3,6 @@
 package com.omada.sample.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -32,44 +30,42 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.omada.sample.data.PhotoData
-import com.omada.sample.search.ApiResult
+import com.omada.sample.domain.ApiResult
+import com.omada.sample.domain.Photo
 import com.omada.sample.search.SearchHistory
 import com.omada.sample.search.SearchViewModel
 
 @Composable
 fun SearchScreen(modifier: Modifier = Modifier) {
     val searchViewModel: SearchViewModel = viewModel()
-    val searchState by searchViewModel.searchState.collectAsState()
+    val searchState = searchViewModel.searchState.collectAsState().value
     Scaffold { padding ->
-        Column(modifier = modifier.padding(padding)) {
-            FlickrSearchBar(
-                onSearch = {
-                    searchViewModel.launchSearch(it)}
-            )
-
-            when(searchState) {
-                is ApiResult.Success -> {
-                    ImageGrid(
-                        photos = (searchState as ApiResult.Success).response.photos.photo,
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .padding(2.dp),
-                    )
-                }
-                else -> {}
+        FlickrSearchBar(
+            modifier = modifier.padding(padding),
+            onSearch = {
+                searchViewModel.launchSearch(it)
             }
+        )
 
+        when(searchState) {
+            is ApiResult.Success -> {
+                ImageGrid(
+                    photos = searchState.response.photoList,
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .padding(2.dp),
+                )
+            }
+            else -> {}
         }
-
     }
 }
 
 @Composable
 private fun FlickrSearchBar(
+    modifier: Modifier,
     onSearch: (String) -> Unit
 ) {
     var text by rememberSaveable { mutableStateOf("") }
@@ -99,7 +95,7 @@ private fun FlickrSearchBar(
                 )
             }
         },
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier
     ) {
         val history = remember { SearchHistory.getHistory() }
 
@@ -136,7 +132,7 @@ private fun SearchBarIcon(icon: ImageVector, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ImageGrid(photos: List<PhotoData>, modifier: Modifier){
+private fun ImageGrid(photos: List<Photo>, modifier: Modifier){
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         contentPadding = PaddingValues(4.dp)
@@ -144,7 +140,6 @@ private fun ImageGrid(photos: List<PhotoData>, modifier: Modifier){
         items(photos.size) {
             FlickrImage(
                 photo = photos[it],
-                sizeSuffix = SizeSuffix.Thumbnail,
                 modifier = modifier
             )
         }
