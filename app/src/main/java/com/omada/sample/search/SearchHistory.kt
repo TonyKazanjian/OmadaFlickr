@@ -1,7 +1,5 @@
 package com.omada.sample.search
 
-import android.util.Log
-
 /**
  * A simple cache to show search query history, as a way to make use of the Material 3 SearchBar.
  * Limited to 20 items.
@@ -22,7 +20,6 @@ object SearchHistory {
 
     @Synchronized
     fun getHistory(): List<String> {
-        Log.d("TONY", "getting history")
         return cache.toList()
     }
 }
