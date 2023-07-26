@@ -36,7 +36,7 @@ object FlickrClient {
 private class FlickerInterceptor: Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
-        val originalUrl = originalRequest.url()
+        val originalUrl = originalRequest.url
         val newUrl = originalUrl
             .newBuilder()
             .addQueryParameter("api_key", BuildConfig.API_KEY)
