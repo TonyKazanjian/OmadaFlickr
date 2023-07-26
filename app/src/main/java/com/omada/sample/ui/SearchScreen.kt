@@ -1,9 +1,8 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.omada.sample.search
+package com.omada.sample.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,6 +27,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.omada.sample.search.SearchViewModel
 
 @Composable
 fun SearchScreen(modifier: Modifier = Modifier) {
