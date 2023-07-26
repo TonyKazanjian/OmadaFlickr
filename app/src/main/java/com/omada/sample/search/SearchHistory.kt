@@ -10,10 +10,13 @@ object SearchHistory {
 
     @Synchronized
     fun add(item: String) {
-        if (item.isNotEmpty() || !cache.contains(item)) {
+        if (item.isNotEmpty() && !cache.contains(item)) {
             if (cache.size >= 20) {
                 cache.removeLast()
             }
+            cache.add(0, item)
+        } else if (cache.contains(item)) {
+            cache.remove(item)
             cache.add(0, item)
         }
     }

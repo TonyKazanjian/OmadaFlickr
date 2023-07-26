@@ -48,7 +48,7 @@ private fun FlickrSearchBar(
     modifier: Modifier,
     onSearch: (String) -> Unit
 ) {
-    var text by rememberSaveable{ mutableStateOf("") }
+    var text by rememberSaveable { mutableStateOf("") }
     var isActive by remember { mutableStateOf(false) }
     SearchBar(
         query = text,
@@ -77,7 +77,7 @@ private fun FlickrSearchBar(
         },
         modifier = modifier
     ) {
-        val history = rememberSaveable{ SearchHistory.getHistory() }
+        val history = remember { SearchHistory.getHistory() }
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(
