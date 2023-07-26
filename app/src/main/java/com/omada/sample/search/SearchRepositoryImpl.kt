@@ -16,7 +16,10 @@ class SearchRepositoryImpl(
 ): SearchRepository {
     override suspend fun getRecentPhotos() = fetchPhotos { ApiResult.Success(api.getRecentPhotos()) }
 
-    override suspend fun getPhotosByQuery(query: String) = fetchPhotos { ApiResult.Success(api.search(query)) }
+    override suspend fun getPhotosByQuery(query: String) = fetchPhotos {
+        SearchHistory.add(query)
+        ApiResult.Success(api.search(query))
+    }
 
     private fun fetchPhotos(onExecute: suspend () -> ApiResult): Flow<ApiResult> =
         flow {

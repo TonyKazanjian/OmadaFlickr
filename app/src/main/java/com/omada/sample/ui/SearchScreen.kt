@@ -21,12 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.omada.sample.search.SearchHistory
 import com.omada.sample.search.SearchViewModel
 
 @Composable
@@ -34,19 +36,19 @@ fun SearchScreen(modifier: Modifier = Modifier) {
     val searchViewModel: SearchViewModel = viewModel()
     Scaffold { padding ->
         FlickrSearchBar(
-            history = listOf("you", "searched", "for", "this"),
             modifier = modifier.padding(padding),
-            onSearch = { searchViewModel.launchSearch(it)})
+            onSearch = {
+                searchViewModel.launchSearch(it)}
+        )
     }
 }
 
 @Composable
 private fun FlickrSearchBar(
-    history: List<String>,
     modifier: Modifier,
     onSearch: (String) -> Unit
 ) {
-    var text by remember { mutableStateOf("") }
+    var text by rememberSaveable{ mutableStateOf("") }
     var isActive by remember { mutableStateOf(false) }
     SearchBar(
         query = text,
@@ -75,6 +77,8 @@ private fun FlickrSearchBar(
         },
         modifier = modifier
     ) {
+        val history = rememberSaveable{ SearchHistory.getHistory() }
+
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(
                 items = history,
@@ -82,7 +86,11 @@ private fun FlickrSearchBar(
             ) { query ->
                 Row(
                     modifier = Modifier
-                        .clickable { onSearch(query) }
+                        .clickable {
+                            onSearch(query)
+                            text = query
+                            isActive = false
+                        }
                         .fillMaxWidth()
                         .padding(14.dp)
                 ) {

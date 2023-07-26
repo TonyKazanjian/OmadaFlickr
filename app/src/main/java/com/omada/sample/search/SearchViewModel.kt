@@ -15,6 +15,10 @@ class SearchViewModel(private val repository: SearchRepository = SearchRepositor
     val searchState: StateFlow<ApiResult>
         get() = _searchState.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ApiResult.Loading)
 
+//    private val _history: MutableStateFlow<List<String>> = MutableStateFlow(SearchHistory.getHistory())
+//    val history: StateFlow<List<String>>
+//        get() = _history.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SearchHistory.getHistory())
+
     init {
         launchSearch()
     }
