@@ -5,6 +5,6 @@ import com.omada.sample.domain.ApiResult
 import kotlinx.coroutines.flow.Flow
 
 interface SearchRepository {
-    suspend fun getRecentPhotos(): Flow<ApiResult>
-    suspend fun getPhotosByQuery(query: String): Flow<ApiResult>
+    suspend fun getRecentPhotos(page: Int): Flow<ApiResult>
+    suspend fun getPhotosByQuery(query: String, page: Int): Flow<ApiResult>
 }

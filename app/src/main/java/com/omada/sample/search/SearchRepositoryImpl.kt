@@ -12,19 +12,20 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
 class SearchRepositoryImpl(
     private val api: FlickrApi = FlickrClient.flickerApi,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Main
 ): SearchRepository {
-    override suspend fun getRecentPhotos() = fetchPhotos {
-        ApiResult.Success(api.getRecentPhotos().map(SizeSuffix.Thumbnail))
+    override suspend fun getRecentPhotos(page: Int) = fetchPhotos {
+        ApiResult.Success(api.getRecentPhotos(page).map(SizeSuffix.Thumbnail))
     }
 
-    override suspend fun getPhotosByQuery(query: String) = fetchPhotos {
+    override suspend fun getPhotosByQuery(query: String, page: Int) = fetchPhotos {
         SearchHistory.add(query)
-        ApiResult.Success(api.search(query).map(SizeSuffix.Thumbnail))
+        ApiResult.Success(api.search(query, page).map(SizeSuffix.Thumbnail))
     }
 
     private fun fetchPhotos(onExecute: suspend () -> ApiResult): Flow<ApiResult> =

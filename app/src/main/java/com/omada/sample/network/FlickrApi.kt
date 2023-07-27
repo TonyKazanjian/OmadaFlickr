@@ -9,8 +9,8 @@ private const val FORMAT = "format=json&nojsoncallback=1"
 interface FlickrApi {
 
     @GET(value = "?method=flickr.photos.getRecent&$FORMAT")
-    suspend fun getRecentPhotos() : PhotosResponse
+    suspend fun getRecentPhotos(@Query("page") page: Int) : PhotosResponse
 
     @GET(value = "?method=flickr.photos.search&$FORMAT")
-    suspend fun search(@Query("text") query: String) : PhotosResponse
+    suspend fun search(@Query("text") query: String, @Query("page") page: Int) : PhotosResponse
 }

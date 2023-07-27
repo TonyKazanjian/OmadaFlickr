@@ -2,9 +2,9 @@
 
 package com.omada.sample.ui
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -26,7 +28,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +53,17 @@ fun SearchScreen(
 ) {
     val searchViewModel: SearchViewModel = viewModel()
     val searchState = searchViewModel.searchState.collectAsState().value
+    val canPaginate = searchViewModel.canPaginate.collectAsState().value
+    val lazyGridState = rememberLazyGridState()
+
+    val shouldStartPaginate by remember {
+        derivedStateOf {
+            val itemIndexPagingThreshold = lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -10
+            val totalItemsCount = lazyGridState.layoutInfo.totalItemsCount - 10
+            canPaginate && itemIndexPagingThreshold >= totalItemsCount
+        }
+    }
+
     Scaffold(
         topBar = {
             FlickrSearchBar(
@@ -63,10 +78,14 @@ fun SearchScreen(
             is ApiResult.Success -> {
                 ImageGrid(
                     photos = searchState.response.photoList,
+                    shouldPaginate = shouldStartPaginate,
+                    lazyGridState = lazyGridState,
                     paddingValues = padding,
                     modifier = Modifier
                         .aspectRatio(1f)
-                )
+                ) {
+                    searchViewModel.fetchNextPage()
+                }
             }
             is ApiResult.Loading -> {
                 Box(
@@ -152,10 +171,20 @@ private fun SearchBarIcon(icon: ImageVector, modifier: Modifier = Modifier) {
 @Composable
 private fun ImageGrid(
     photos: List<Photo>,
+    shouldPaginate: Boolean,
+    lazyGridState: LazyGridState,
     paddingValues: PaddingValues,
-    modifier: Modifier){
+    modifier: Modifier,
+    fetchPhotos: () -> Unit
+){
+    LaunchedEffect(key1 = shouldPaginate) {
+        if (shouldPaginate){
+            fetchPhotos()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
+        state = lazyGridState,
         contentPadding = paddingValues
     ){
         items(photos.size) {
