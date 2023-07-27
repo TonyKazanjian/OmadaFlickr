@@ -5,7 +5,6 @@ import com.omada.sample.data.PhotosResponse
 sealed class ApiResult {
     data class Success(val response: PhotoPage): ApiResult()
     data class Error(val error: String): ApiResult()
-//    data class Paginating(val response: PhotosResponse): ApiResult()
     object Loading: ApiResult()
 }
 
