@@ -3,9 +3,12 @@
 package com.omada.sample.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -28,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -38,27 +43,40 @@ import com.omada.sample.search.SearchHistory
 import com.omada.sample.search.SearchViewModel
 
 @Composable
-fun SearchScreen(modifier: Modifier = Modifier) {
+fun SearchScreen(
+    modifier: Modifier = Modifier,
+    onError: (String) -> Unit
+) {
     val searchViewModel: SearchViewModel = viewModel()
     val searchState = searchViewModel.searchState.collectAsState().value
-    Scaffold { padding ->
-        FlickrSearchBar(
-            modifier = modifier.padding(padding),
-            onSearch = {
-                searchViewModel.launchSearch(it)
-            }
-        )
-
+    Scaffold(
+        topBar = {
+            FlickrSearchBar(
+                modifier = modifier.padding(4.dp),
+                onSearch = {
+                    searchViewModel.launchSearch(it)
+                }
+            )
+        }
+    ) { padding ->
         when(searchState) {
             is ApiResult.Success -> {
                 ImageGrid(
                     photos = searchState.response.photoList,
+                    paddingValues = padding,
                     modifier = Modifier
                         .aspectRatio(1f)
-                        .padding(2.dp),
                 )
             }
-            else -> {}
+            is ApiResult.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            is ApiResult.Error -> onError(searchState.error)
         }
     }
 }
@@ -132,22 +150,20 @@ private fun SearchBarIcon(icon: ImageVector, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ImageGrid(photos: List<Photo>, modifier: Modifier){
+private fun ImageGrid(
+    photos: List<Photo>,
+    paddingValues: PaddingValues,
+    modifier: Modifier){
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
-        contentPadding = PaddingValues(4.dp)
+        contentPadding = paddingValues
     ){
         items(photos.size) {
             FlickrImage(
                 photo = photos[it],
                 modifier = modifier
+                    .padding(2.dp)
             )
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun SearchPreview() {
-//    SearchScreen(modifier = Modifier.fillMaxWidth())
-//}
