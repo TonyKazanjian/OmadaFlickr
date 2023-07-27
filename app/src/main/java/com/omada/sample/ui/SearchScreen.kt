@@ -59,8 +59,8 @@ fun SearchScreen(
     val shouldStartPaginate by remember {
         derivedStateOf {
             val itemIndexPagingThreshold = lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -10
-            val totalItemsCount = lazyGridState.layoutInfo.totalItemsCount - 10
-            canPaginate && itemIndexPagingThreshold >= totalItemsCount
+            val totalItemsCount = lazyGridState.layoutInfo.totalItemsCount - 20
+            canPaginate && itemIndexPagingThreshold > totalItemsCount
         }
     }
 
@@ -69,7 +69,11 @@ fun SearchScreen(
             FlickrSearchBar(
                 modifier = modifier.padding(4.dp),
                 onSearch = {
-                    searchViewModel.launchSearch(it)
+                    searchViewModel.launchSearch(it) {
+                        //This is a hack. The LazyGridState isn't updating the first time we receive new items in the list, which results in two calls to fetch
+                        //when we should have just one. Therefore, this is here to force the list to scroll to the top when we end up with two pages of new search results.
+                        lazyGridState.scrollToItem(0)
+                    }
                 }
             )
         }
@@ -103,7 +107,7 @@ fun SearchScreen(
 @Composable
 private fun FlickrSearchBar(
     modifier: Modifier,
-    onSearch: (String) -> Unit
+    onSearch: (String) -> Unit,
 ) {
     var text by rememberSaveable { mutableStateOf("") }
     var isActive by remember { mutableStateOf(false) }
@@ -180,6 +184,7 @@ private fun ImageGrid(
     LaunchedEffect(key1 = shouldPaginate) {
         if (shouldPaginate){
             fetchPhotos()
+            Log.d("TONY", "fectch from lazy grid")
         }
     }
     LazyVerticalGrid(

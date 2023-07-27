@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -22,64 +23,70 @@ class SearchViewModel(private val repository: SearchRepository = SearchRepositor
     val canPaginate: StateFlow<Boolean>
         get() = _canPaginate.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
-    private val currentPage = MutableStateFlow(1)
+    private var currentPage = 1
 
     private val photosList = mutableListOf<Photo>()
 
+    //Would like to use a SaveStateHandle for this
     private var currentQuery: String = ""
 
     init {
         launchSearch()
     }
 
-    fun launchSearch(searchText: String = "") {
+    fun launchSearch(
+        searchText: String = "",
+        onGridItemsUpdated: suspend () -> Unit = {}
+    ) {
         viewModelScope.launch {
-            currentPage.value = 1
+            currentPage = 1
             if (searchText.isNotEmpty()) {
                 currentQuery = searchText
                 repository.getPhotosByQuery(currentQuery, 1).collectResults()
             } else {
                 repository.getRecentPhotos(1).collectResults()
             }
+            onGridItemsUpdated()
         }
     }
 
     fun fetchNextPage() {
         viewModelScope.launch {
             if (currentQuery.isNotEmpty()) {
-                repository.getPhotosByQuery(currentQuery, currentPage.value).collectResults()
+                repository.getPhotosByQuery(currentQuery, currentPage).collectResults()
             } else {
-                repository.getRecentPhotos(currentPage.value).collectResults()
+                repository.getRecentPhotos(currentPage).collectResults()
             }
         }
     }
 
     private suspend fun Flow<ApiResult>.collectResults() {
-        collect {
-            if (it is ApiResult.Success) {
-                _canPaginate.value = it.response.page >= 1 && it.response.page <= it.response.pages
-
-                if(_canPaginate.value) {
-                    Log.d("TONY", "increment page")
-
-                    currentPage.value ++
+        collect { result ->
+            when(result) {
+                is ApiResult.Loading -> {
+                    if (photosList.isEmpty()) {
+                        _searchState.value = result
+                    }
                 }
-                if (it.response.page == 1) {
-                    Log.d("TONY", "first page")
-                    photosList.clear()
-                    photosList.addAll(it.response.photoList)
-                } else {
-                    Log.d("TONY", "currentPage: ${currentPage.value}")
-                    photosList.addAll(it.response.photoList)
-                }
+                is ApiResult.Success -> {
+                    _canPaginate.value = result.response.page >= 1 && result.response.page <= result.response.pages
 
-                val result = it.response.copy(
-                    page = currentPage.value,
-                    photoList = photosList
-                )
-                _searchState.value = ApiResult.Success(result)
-            } else {
-                _searchState.value = it
+                    if (result.response.page == 1) {
+                        photosList.clear()
+                        photosList.addAll(result.response.photoList)
+                    } else {
+                        photosList.addAll(result.response.photoList)
+                    }
+                    val response = result.response.copy(
+                        page = currentPage,
+                        photoList = photosList
+                    )
+                    if(_canPaginate.value) {
+                        currentPage++
+                    }
+                    _searchState.value = ApiResult.Success(response)
+                }
+                is ApiResult.Error -> _searchState.value = result
             }
         }
     }
